@@ -18,8 +18,16 @@ $config = {
     "card" => {"width" => 160, "height" => 230},
     "thumbnail" => {"width" => 54, "height" => 81},
     "tip" => {"x" => 142, "y" => 285},
-    "extname" => ".ydp"
+    "player_lp" => {"x" => 0, "y" => 0, "width" => 200, "height" => 24, "default" => 8000},
+    "opponent_lp" => {"x" => 200, "y" => 0, "width" => 200, "height" => 24, "default" => 8000},
+    "project_extname" => ".ydp",
+    "output_extname" => ".lua",
+    "output_dir" => 'single',
+    "title" => "YGOPRO Duel Puzzle Maker",
+    "hint" => "左键点击编辑卡片 右键点击切换表示形式",
+    "font-family" => "微软雅黑"
 }
+$config.merge!(YAML.load_file('ygopro-puzzle-maker-config.yml')) rescue nil
 
 class Card
   attr_accessor :number, :position, :player, :zone, :index, :x, :y, :shoes_image, :shoes_thumbnail
@@ -122,9 +130,9 @@ class Card
       when :attack
         "POS_FACEUP_ATTACK"
       when :defense
-        "POS_FACEUP_DEFENSE"
+        "POS_FACEUP_DEFENCE"
       when :set
-        "POS_FACEDOWN_DEFENSE"
+        "POS_FACEDOWN_DEFENCE"
     end
   end
 
@@ -148,19 +156,20 @@ class Card
     cards = []
     @@all.each { |card| cards << card if card.number }
     card_hashs = cards.collect { |card| card.to_hash }
-    open(name+$config["extname"], 'w') { |f| f.write ({"name" => name, "player_lp" => $player1_lp, "opponent_lp" => $player2_lp, "cards" => card_hashs}.to_yaml) }
-    open(name+'.lua', 'w') do |f|
+    open(name+$config["project_extname"], 'w') { |f| f.write ({"name" => name, "player_lp" => $player_lp, "opponent_lp" => $opponent_lp, "cards" => card_hashs}.to_yaml) }
+    Dir.mkdir($config['output_dir']) unless File.directory? $config['output_dir']
+    open(File.expand_path(name+$config['output_extname'], $config['output_dir']), 'w') do |f|
       f.puts '--created by ygopro puzzle maker'
-      f.puts "Debug.SetPlayerInfo(0,#{$player1_lp},1,0)"
-      f.puts "Debug.SetPlayerInfo(1,#{$player2_lp},1,0)"
       f.puts "Debug.SetAIName('#{name}')"
-      f.puts '--Debug.SetDuelInfo(DUEL_ATTACK_FIRST_TURN+DUEL_SIMPLE_AI)'
-      f.puts 'Debug.ReloadFieldBegin(true)'
+      f.puts 'Debug.ReloadFieldBegin(DUEL_ATTACK_FIRST_TURN+DUEL_SIMPLE_AI)'
+      f.puts "Debug.SetPlayerInfo(0,#{$player_lp},0,0)"
+      f.puts "Debug.SetPlayerInfo(1,#{$opponent_lp},0,0)"
       cards.each do |card|
         f.puts "Debug.AddCard(#{card.number},#{card.player ? 0 : 1},#{card.player ? 0 : 1},#{card.ygopro_zone},#{card.ygopro_index},#{card.ygopro_position})"
       end
       f.puts 'Debug.ReloadFieldEnd()'
       f.puts 'Debug.ShowHint("在这个回合取得胜利！")'
+      f.puts 'aux.BeginPuzzle()'
     end
   end
 end
@@ -232,26 +241,28 @@ def create_card(player, zone, index)
   result
 end
 
-Shoes.app title: "YGOPRO Duel Puzzle Maker", width: 1024, height: 640, resizable: false do
+Shoes.app title: $config['title'], width: 1024, height: 640, resizable: false do
 
   background 'images/background.jpg'
-  p = para("左键点击编辑卡片 右键点击切换表示形式", family: "微软雅黑")
+  p = para($config['hint'], family: $config['font-family'])
   p.left = $config["tip"]["x"]
   p.top = $config["tip"]["y"]
-  t1 = edit_line(text: "8000") do
+  
+  $player_lp = $config['player_lp']['default']
+  $opponent_lp = $config['opponent_lp']['default']
+  t1 = edit_line(left: $config['player_lp']['x'].to_i, top: $config['player_lp']['y'].to_i, width: $config['player_lp']['width'].to_i, height: $config['player_lp']['height'].to_i, text: $player_lp.to_s) do
     t1.change do
-      $player1_lp = t1.text.to_i
+      $player_lp = t1.text.to_i
       Card.save
     end
   end
-  t2 = edit_line(text: "8000") do
+  t2 = edit_line(left: $config['opponent_lp']['x'].to_i, top: $config['opponent_lp']['y'].to_i, width: $config['opponent_lp']['width'].to_i, height: $config['opponent_lp']['height'].to_i, text: $opponent_lp.to_s) do
     t2.change do
-      $player2_lp = t2.text.to_i
+      $opponent_lp = t2.text.to_i
       Card.save
     end
   end
-  $player1_lp = 8000
-  $player2_lp = 8000
+
   @border = image 'images/cursor.png'
   @border.hide
   ([:extra, :graveyard, :removed, :deck, :hand] + (0..10).to_a).each { |zone| create_card(true, zone, 0); create_card(false, zone, 0) }

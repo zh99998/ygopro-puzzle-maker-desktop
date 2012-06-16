@@ -1,0 +1,76 @@
+---
+extra:
+  x: 59
+  y: 84
+graveyard:
+  x: 601
+  y: 0
+removed:
+  x: 660
+  y: 0
+deck:
+  x: 601
+  y: 84
+field:
+- x: 59
+  y: 0
+- x: 143
+  y: 84
+- x: 237
+  y: 84
+- x: 331
+  y: 84
+- x: 425
+  y: 84
+- x: 519
+  y: 84
+- x: 143
+  y: 0
+- x: 237
+  y: 0
+- x: 331
+  y: 0
+- x: 425
+  y: 0
+- x: 519
+  y: 0
+hand:
+  x: 0
+  y: 201
+  space: 8
+section:
+  width: 716
+  height: 266
+player_field:
+  x: 4
+  y: 325
+opponent_field:
+  x: 4
+  y: 0
+card:
+  width: 160
+  height: 230
+thumbnail:
+  width: 54
+  height: 81
+tip:
+  x: 142
+  y: 285
+player_lp:
+  x: 0
+  y: 0
+  width: 200
+  height: 24
+  default: 8000
+opponent_lp:
+  x: 200
+  y: 0
+  width: 200
+  height: 24
+  default: 8000
+project_extname: .ydp
+output_extname: .lua
+output_dir: single
+title: YGOPRO Duel Puzzle Maker1
+hint: ×ó¼üµã»÷±à¼­¿¨Æ¬ ÓÒ¼üµã»÷ÇÐ»»±íÊ¾ÐÎÊ½
+font-family: Î¢ÈíÑÅºÚ
