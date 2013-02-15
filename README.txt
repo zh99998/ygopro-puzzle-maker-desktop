@@ -1,5 +1,2 @@
-ygopro-puzzle-maker
-===================
-requirement:
-ygopro
-shoes
+this project is deprecated
+look at: https://github.com/zh99998/ygopro-puzzle-maker
